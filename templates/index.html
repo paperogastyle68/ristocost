@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RistoCost</title>
+<style>
+/* ── RESET & BASE ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #1e3a5f; --blue2: #2c5282; --accent: #3182ce;
+  --green: #38a169; --orange: #dd6b20; --red: #e53e3e;
+  --purple: #805ad5; --teal: #2c7a7b; --gray: #4a5568;
+  --bg: #f7fafc; --card: #ffffff; --border: #e2e8f0;
+  --text: #2d3748; --muted: #718096;
+  --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ──────────────────────────────────── */
+header { background: var(--blue); color: white; padding: 0 16px;
+         display: flex; align-items: center; justify-content: space-between;
+         height: 56px; position: sticky; top: 0; z-index: 100;
+         box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+header img { height: 32px; }
+header .logo-text { font-size: 22px; font-weight: 700; color: white; }
+.header-btns { display: flex; gap: 8px; }
+.header-btns button { background: rgba(255,255,255,0.15); border: none;
+  color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600; transition: background 0.2s; }
+.header-btns button:hover { background: rgba(255,255,255,0.25); }
+
+/* ── NAV TABS ────────────────────────────────── */
+nav { background: white; border-bottom: 2px solid var(--border);
+      display: flex; overflow-x: auto; position: sticky; top: 56px; z-index: 99; }
+nav button { flex: none; padding: 12px 18px; border: none; background: none;
+  cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+nav button:hover { color: var(--accent); background: #ebf8ff; }
+
+/* ── LAYOUT ──────────────────────────────────── */
+main { padding: 16px; max-width: 900px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── CARD ────────────────────────────────────── */
+.card { background: var(--card); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; }
+.card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px;
+           color: var(--blue); border-bottom: 2px solid var(--border);
+           padding-bottom: 8px; }
+
+/* ── FORM ────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; font-weight: 600; color: var(--muted);
+                    text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select {
+  padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px;
+  font-size: 14px; color: var(--text); background: white; width: 100%;
+  transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus {
+  outline: none; border-color: var(--accent); }
+.form-full { grid-column: 1 / -1; }
+
+/* ── BUTTONS ─────────────────────────────────── */
+.btn { padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer;
+       font-size: 13px; font-weight: 700; transition: all 0.2s; display: inline-flex;
+       align-items: center; gap: 6px; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: white; }
+.btn-green { background: var(--green); color: white; }
+.btn-orange { background: var(--orange); color: white; }
+.btn-red { background: var(--red); color: white; }
+.btn-purple { background: var(--purple); color: white; }
+.btn-teal { background: var(--teal); color: white; }
+.btn-gray { background: var(--gray); color: white; }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-full { width: 100%; justify-content: center; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* ── LISTA INGREDIENTI ───────────────────────── */
+.search-box { position: relative; margin-bottom: 10px; }
+.search-box input { padding-left: 36px; }
+.search-box::before { content: "🔍"; position: absolute; left: 10px;
+                      top: 50%; transform: translateY(-50%); font-size: 14px; }
+.ing-list { max-height: 280px; overflow-y: auto; border: 2px solid var(--border);
+            border-radius: 8px; }
+.ing-item { display: flex; align-items: center; padding: 10px 12px;
+            border-bottom: 1px solid var(--border); cursor: pointer;
+            transition: background 0.15s; }
+.ing-item:last-child { border-bottom: none; }
+.ing-item:hover, .ing-item.selected { background: #ebf8ff; }
+.ing-item .ing-name { font-weight: 600; font-size: 13px; flex: 1; }
+.ing-item .ing-info { font-size: 11px; color: var(--muted); }
+.ing-item .ing-badge { background: var(--accent); color: white;
+  font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; }
+
+/* ── RICETTA TREE ────────────────────────────── */
+.ricetta-list { border: 2px solid var(--border); border-radius: 8px;
+                min-height: 80px; max-height: 200px; overflow-y: auto; }
+.ric-item { display: flex; align-items: center; padding: 10px 12px;
+            border-bottom: 1px solid var(--border); }
+.ric-item:last-child { border-bottom: none; }
+.ric-item .ric-name { flex: 1; font-weight: 600; font-size: 13px; }
+.ric-item .ric-qty { color: var(--muted); font-size: 12px; margin: 0 10px; }
+.ric-item .ric-cost { font-weight: 700; color: var(--green); font-size: 13px; }
+.ric-item .ric-del { background: none; border: none; cursor: pointer;
+  color: var(--red); font-size: 16px; padding: 2px 6px; }
+
+/* ── COSTO BOX ───────────────────────────────── */
+.cost-box { background: linear-gradient(135deg, #ebf8ff, #e6fffa);
+            border: 2px solid #bee3f8; border-radius: var(--radius);
+            padding: 16px; text-align: center; }
+.cost-main { font-size: 20px; font-weight: 800; color: var(--blue); margin-bottom: 10px; }
+.cost-row { display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 0; border-bottom: 1px solid #bee3f8; }
+.cost-row:last-child { border-bottom: none; }
+.cost-row label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.cost-row .val { font-size: 14px; font-weight: 700; color: var(--text); }
+.cost-row .val.green { color: var(--green); }
+.cost-row .val.orange { color: var(--orange); }
+.cost-row input.inline { width: 70px; padding: 4px 8px; border: 2px solid var(--border);
+  border-radius: 6px; font-size: 13px; text-align: center; }
+
+/* ── DASHBOARD CARDS ─────────────────────────── */
+.dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 600px) { .dash-grid { grid-template-columns: repeat(3, 1fr); } }
+.dash-card { border-radius: var(--radius); padding: 16px; color: white; text-align: center; }
+.dash-card .dc-label { font-size: 11px; opacity: 0.85; margin-bottom: 6px; font-weight: 600; }
+.dash-card .dc-val { font-size: 20px; font-weight: 800; }
+.dash-card .dc-sub { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+
+/* ── MODAL ───────────────────────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: var(--radius); padding: 20px;
+  width: 90%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--blue); }
+.modal-close { float: right; background: none; border: none; font-size: 20px;
+  cursor: pointer; color: var(--muted); margin-top: -4px; }
+
+/* ── TOAST ───────────────────────────────────── */
+#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #2d3748; color: white; padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; z-index: 300; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; }
+#toast.success { background: var(--green); }
+#toast.error { background: var(--red); }
+
+/* ── TABLE ───────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--blue); color: white; padding: 8px 10px; text-align: left; font-size: 12px; }
+td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+tr:nth-child(even) { background: #f7fafc; }
+tr.min-row td { background: #f0fff4; color: #276749; font-weight: 600; }
+tr.max-row td { background: #fff5f5; color: #c53030; font-weight: 600; }
+
+/* ── EMPTY STATE ─────────────────────────────── */
+.empty { text-align: center; padding: 30px; color: var(--muted); }
+.empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
+
+/* ── STATUS BAR ──────────────────────────────── */
+footer { background: var(--blue); color: rgba(255,255,255,0.5);
+         font-size: 11px; text-align: right; padding: 6px 16px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div id="header-logo">
+    <img src="/static/logo.png" alt="RistoCost" id="logo-img" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
+    <span id="logo-fallback" class="logo-text" style="display:none">RistoCost</span>
+  </div>
+  <div class="header-btns">
+    <button onclick="openTab('dashboard')">📊</button>
+    <button onclick="openModal('modalGuida')">❓</button>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav>
+  <button class="active" onclick="openTab('ingredienti')">🧅 Ingredienti</button>
+  <button onclick="openTab('ricetta')">🍳 Ricetta</button>
+  <button onclick="openTab('dashboard')">📊 Dashboard</button>
+  <button onclick="openTab('backup')">🗂️ Backup</button>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- ── TAB: INGREDIENTI ── -->
+<div id="tab-ingredienti" class="tab-content active">
+
+  <div class="card">
+    <h2>➕ Aggiungi / Modifica Ingrediente</h2>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>Nome Ingrediente</label>
+        <input type="text" id="ing-nome" placeholder="es. Farina 00">
+      </div>
+      <div class="form-group">
+        <label>Costo (€)</label>
+        <input type="number" id="ing-costo" placeholder="1.50" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Quantità Totale</label>
+        <input type="number" id="ing-quantita" placeholder="1000" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Unità di Misura</label>
+        <select id="ing-unita">
+          <option>g</option><option>kg</option>
+          <option>ml</option><option>l</option><option>pz</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Scarto (%)</label>
+        <input type="number" id="ing-scarto" placeholder="0" value="0" min="0" max="99">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="salvaIngrediente()">➕ Salva Ingrediente</button>
+      <button class="btn btn-gray btn-sm" onclick="resetFormIngrediente()" id="btn-annulla-mod" style="display:none">✕ Annulla</button>
+      <label class="btn btn-teal btn-sm">
+        📥 Importa CSV <input type="file" accept=".csv" style="display:none" onchange="importaCSV(this)">
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📦 Ingredienti Disponibili</h2>
+    <div class="search-box">
+      <input type="text" id="search-ing" placeholder="Cerca ingrediente..." oninput="renderIngredienti()">
+    </div>
+    <div class="ing-list" id="ing-list">
+      <div class="empty"><div class="empty-icon">🧅</div>Nessun ingrediente</div>
+    </div>
+  </div>
+
+</div><!-- /tab-ingredienti -->
+
+<!-- ── TAB: RICETTA ── -->
+<div id="tab-ricetta" class="tab-content">
+
+  <div class="card">
+    <h2>🍳 Nuova Ricetta</h2>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>Nome Ricetta</label>
+        <input type="text" id="ric-nome" placeholder="es. Tiramisù">
+      </div>
+      <div class="form-group">
+        <label>Porzioni</label>
+        <input type="number" id="ric-porzioni" value="1" min="1" oninput="aggiornaCosto()">
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="ric-note" placeholder="Allergeni, varianti...">
+      </div>
+      <div class="form-group">
+        <label>Ingrediente</label>
+        <select id="ric-ingrediente"></select>
+      </div>
+      <div class="form-group">
+        <label>Quantità Usata</label>
+        <input type="number" id="ric-quantita" placeholder="100" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="aggiungiARicetta()">➕ Aggiungi alla Ricetta</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Composizione Ricetta</h2>
+    <div class="ricetta-list" id="ric-list">
+      <div class="empty"><div class="empty-icon">🍽️</div>Aggiungi ingredienti</div>
+    </div>
+  </div>
+
+  <div class="cost-box" id="cost-box">
+    <div class="cost-main" id="cost-main">💰 COSTO: €0.00</div>
+    <div class="cost-row">
+      <label>Margine profitto</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input class="inline" type="number" id="margine" value="30" min="0" oninput="aggiornaCosto()"> %
+      </div>
+    </div>
+    <div class="cost-row">
+      <label>IVA</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input class="inline" type="number" id="iva" value="0" min="0" oninput="aggiornaCosto()"> %
+      </div>
+    </div>
+    <div class="cost-row">
+      <label>Prezzo vendita</label>
+      <span class="val green" id="prezzo-vendita">€0.00</span>
+    </div>
+    <div class="cost-row">
+      <label>Profitto</label>
+      <span class="val orange" id="profitto">€0.00</span>
+    </div>
+    <div class="cost-row" id="row-iva" style="display:none">
+      <label>Prezzo con IVA</label>
+      <span class="val" id="prezzo-iva">€0.00</span>
+    </div>
+  </div>
+
+  <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:16px">
+    <button class="btn btn-green" onclick="salvaRicetta()">💾 Salva</button>
+    <button class="btn btn-orange" onclick="openModal('modalCarica')">📋 Carica</button>
+    <button class="btn btn-teal" onclick="openModal('modalDuplica')">📑 Duplica</button>
+    <button class="btn btn-purple" onclick="esportaPDF()">📄 PDF</button>
+    <button class="btn btn-red btn-sm" onclick="pulisciRicetta()">🗑️ Pulisci</button>
+    <button class="btn btn-gray btn-sm" onclick="openModal('modalConfronta')">⚖️ Confronta</button>
+    <button class="btn btn-gray btn-sm" onclick="reportMensile()">📊 Report</button>
+    <button class="btn btn-red btn-sm" onclick="openModal('modalElimina')">🗑️ Elimina ricetta</button>
+  </div>
+
+</div><!-- /tab-ricetta -->
+
+<!-- ── TAB: DASHBOARD ── -->
+<div id="tab-dashboard" class="tab-content">
+  <div class="card">
+    <h2>📊 Dashboard</h2>
+    <div class="dash-grid" id="dash-grid">
+      <div class="empty"><div class="empty-icon">📊</div>Caricamento...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: BACKUP ── -->
+<div id="tab-backup" class="tab-content">
+  <div class="card">
+    <h2>🗂️ Gestione Backup</h2>
+    <div id="backup-list" class="ing-list">
+      <div class="empty">Nessun backup disponibile</div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary btn-sm" onclick="caricaBackup()">🔄 Aggiorna lista</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<footer>© 2025 Andrea Marella — Tutti i diritti riservati</footer>
+
+<!-- ── MODALI ── -->
+
+<!-- Carica Ricetta -->
+<div class="modal-overlay" id="modalCarica">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalCarica')">✕</button>
+    <h3>📋 Carica Ricetta</h3>
+    <div id="list-carica" class="ing-list" style="max-height:200px"></div>
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="caricaRicettaSelezionata()">Carica</button>
+      <button class="btn btn-gray btn-sm" onclick="closeModal('modalCarica')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- Duplica Ricetta -->
+<div class="modal-overlay" id="modalDuplica">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalDuplica')">✕</button>
+    <h3>📑 Duplica Ricetta</h3>
+    <div id="list-duplica" class="ing-list" style="max-height:160px;margin-bottom:12px"></div>
+    <div class="form-group">
+      <label>Nome copia</label>
+      <input type="text" id="dup-nome" placeholder="Nome nuova ricetta">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-teal" onclick="duplicaRicetta()">📑 Duplica</button>
+      <button class="btn btn-gray btn-sm" onclick="closeModal('modalDuplica')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- Elimina Ricetta -->
+<div class="modal-overlay" id="modalElimina">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalElimina')">✕</button>
+    <h3>🗑️ Elimina Ricetta</h3>
+    <div id="list-elimina" class="ing-list" style="max-height:200px"></div>
+    <div class="btn-row">
+      <button class="btn btn-red" onclick="eliminaRicettaSelezionata()">🗑️ Elimina</button>
+      <button class="btn btn-gray btn-sm" onclick="closeModal('modalElimina')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confronta Ricette -->
+<div class="modal-overlay" id="modalConfronta">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-close" onclick="closeModal('modalConfronta')">✕</button>
+    <h3>⚖️ Confronto Ricette</h3>
+    <div class="table-wrap">
+      <table id="tabella-confronto">
+        <thead><tr><th>Ricetta</th><th>Costo</th><th>Prezzo</th><th>Profitto</th><th>Margine</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">🟢 Più economica · 🔴 Più costosa</p>
+  </div>
+</div>
+
+<!-- Storico Prezzi -->
+<div class="modal-overlay" id="modalStorico">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalStorico')">✕</button>
+    <h3>📈 Storico Prezzi</h3>
+    <p id="storico-nome" style="font-weight:700;margin-bottom:10px;color:var(--blue)"></p>
+    <div class="table-wrap">
+      <table id="tabella-storico">
+        <thead><tr><th>Data</th><th>Costo unitario</th><th>Unità</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Guida -->
+<div class="modal-overlay" id="modalGuida">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalGuida')">✕</button>
+    <h3>❓ Guida RistoCost</h3>
+    <div style="font-size:13px;line-height:1.7;color:var(--text)">
+      <p><strong style="color:var(--green)">🧅 Ingredienti</strong><br>
+      Aggiungi ingredienti con costo, quantità, unità e scarto%. Modifica toccando il nome. Importa da CSV.</p>
+      <p style="margin-top:10px"><strong style="color:var(--accent)">🍳 Ricetta</strong><br>
+      Seleziona ingredienti e quantità per comporre la ricetta. Imposta porzioni e note. Calcolo costi in tempo reale.</p>
+      <p style="margin-top:10px"><strong style="color:var(--orange)">💰 Costi</strong><br>
+      Margine e IVA configurabili. Prezzo vendita e profitto aggiornati automaticamente.</p>
+      <p style="margin-top:10px"><strong style="color:var(--purple)">📊 Dashboard</strong><br>
+      Panoramica con statistiche su ingredienti e ricette.</p>
+      <p style="margin-top:10px"><strong style="color:var(--teal)">📄 PDF</strong><br>
+      Esporta la ricetta in PDF professionale. Richiede: <code>pip install reportlab</code></p>
+      <p style="margin-top:10px"><strong style="color:var(--gray)">🗂️ Backup</strong><br>
+      Backup automatico ad ogni salvataggio. Ripristina versioni precedenti dalla tab Backup.</p>
+      <hr style="margin:14px 0;border-color:var(--border)">
+      <p style="font-size:11px;color:var(--muted)">© 2025 Andrea Marella — Tutti i diritti riservati</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── STATO ─────────────────────────────────────────────────────────
+let state = { ingredienti: {}, ricette: {}, storico_prezzi: {} };
+let ricettaCorrente = {};  // {nome_ing: quantita}
+let ingSelezionato = null;
+let ingModifica = null;
+let ricettaModalSel = null;
+
+// ── INIT ──────────────────────────────────────────────────────────
+async function init() {
+  const res = await fetch('/api/data');
+  state = await res.json();
+  renderIngredienti();
+  renderComboIngredienti();
+  renderDashboard();
+}
+init();
+
+// ── TABS ──────────────────────────────────────────────────────────
+function openTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['ingredienti','ricetta','dashboard','backup'];
+  const idx = tabs.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('nav button')[idx].classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'backup') caricaBackup();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 2500);
+}
+
+// ── MODALI ────────────────────────────────────────────────────────
+function openModal(id) {
+  if (id === 'modalCarica') renderListaRicette('list-carica');
+  if (id === 'modalDuplica') renderListaRicette('list-duplica');
+  if (id === 'modalElimina') renderListaRicette('list-elimina');
+  if (id === 'modalConfronta') renderConfronto();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  ricettaModalSel = null;
+}
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// ── INGREDIENTI ───────────────────────────────────────────────────
+function renderIngredienti() {
+  const filtro = document.getElementById('search-ing').value.toLowerCase();
+  const list = document.getElementById('ing-list');
+  const nomi = Object.keys(state.ingredienti).filter(n => n.toLowerCase().includes(filtro)).sort();
+  if (!nomi.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🧅</div>Nessun ingrediente</div>'; return;
+  }
+  list.innerHTML = nomi.map(n => {
+    const i = state.ingredienti[n];
+    const sc = i.scarto > 0 ? ` · Scarto ${i.scarto}%` : '';
+    return `<div class="ing-item" onclick="selezionaIngrediente('${n.replace(/'/g,"\\'")}')">
+      <div>
+        <div class="ing-name">${n}</div>
+        <div class="ing-info">€${i.costo_unitario.toFixed(4)}/${i.unita} · Tot: ${i.quantita_totale}${i.unita}${sc}</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <button class="btn btn-orange btn-sm" onclick="event.stopPropagation();modificaIngrediente('${n.replace(/'/g,"\\'")}')">✏️</button>
+        <button class="btn btn-sm" style="background:#e2e8f0;color:#4a5568" onclick="event.stopPropagation();mostraStorico('${n.replace(/'/g,"\\'")}')">📈</button>
+        <button class="btn btn-red btn-sm" onclick="event.stopPropagation();eliminaIngrediente('${n.replace(/'/g,"\\'")}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selezionaIngrediente(nome) {
+  ingSelezionato = nome;
+  document.querySelectorAll('.ing-item').forEach(el => el.classList.remove('selected'));
+}
+
+async function salvaIngrediente() {
+  const nome = document.getElementById('ing-nome').value.trim();
+  const costo = document.getElementById('ing-costo').value;
+  const quantita = document.getElementById('ing-quantita').value;
+  const unita = document.getElementById('ing-unita').value;
+  const scarto = document.getElementById('ing-scarto').value || 0;
+  if (!nome || !costo || !quantita) { toast('Compila tutti i campi!', 'error'); return; }
+  const url = ingModifica ? `/api/ingredienti/${encodeURIComponent(ingModifica)}` : '/api/ingredienti';
+  const method = ingModifica ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nome, costo, quantita, unita, scarto}) });
+  const data = await res.json();
+  if (data.error) { toast(data.error, 'error'); return; }
+  state.ingredienti = data.ingredienti;
+  renderIngredienti(); renderComboIngredienti();
+  resetFormIngrediente();
+  toast(ingModifica ? 'Ingrediente modificato!' : 'Ingrediente aggiunto!');
+  ingModifica = null;
+}
+
+function modificaIngrediente(nome) {
+  const i = state.ingredienti[nome];
+  document.getElementById('ing-nome').value = nome;
+  document.getElementById('ing-costo').value = (i.costo_unitario_lordo * i.quantita_totale).toFixed(4);
+  document.getElementById('ing-quantita').value = i.quantita_totale;
+  document.getElementById('ing-unita').value = i.unita;
+  document.getElementById('ing-scarto').value = i.scarto || 0;
+  ingModifica = nome;
+  document.getElementById('btn-annulla-mod').style.display = 'inline-flex';
+  openTab('ingredienti');
+  document.getElementById('ing-nome').focus();
+  window.scrollTo(0, 0);
+}
+
+function resetFormIngrediente() {
+  ['ing-nome','ing-costo','ing-quantita','ing-scarto'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ing-scarto').value = '0';
+  document.getElementById('ing-unita').value = 'g';
+  document.getElementById('btn-annulla-mod').style.display = 'none';
+  ingModifica = null;
+}
+
+async function eliminaIngrediente(nome) {
+  if (!confirm(`Eliminare "${nome}"?`)) return;
+  const res = await fetch(`/api/ingredienti/${encodeURIComponent(nome)}`, {method:'DELETE'});
+  const data = await res.json();
+  state.ingredienti = data.ingredienti;
+  renderIngredienti(); renderComboIngredienti();
+  toast('Ingrediente eliminato!');
+}
+
+async function mostraStorico(nome) {
+  const res = await fetch(`/api/storico/${encodeURIComponent(nome)}`);
+  const storico = await res.json();
+  document.getElementById('storico-nome').textContent = nome;
+  const tbody = document.querySelector('#tabella-storico tbody');
+  if (!storico.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted)">Nessuna variazione registrata</td></tr>';
+  } else {
+    tbody.innerHTML = storico.map(s =>
+      `<tr><td>${s.data}</td><td>€${parseFloat(s.costo_unitario).toFixed(4)}</td><td>${s.unita}</td></tr>`
+    ).join('');
+  }
+  openModal('modalStorico');
+}
+
+async function importaCSV(input) {
+  const file = input.files[0]; if (!file) return;
+  const fd = new FormData(); fd.append('file', file);
+  const res = await fetch('/api/importa', {method:'POST', body: fd});
+  const data = await res.json();
+  if (data.error) { toast(data.error, 'error'); return; }
+  state.ingredienti = data.ingredienti;
+  renderIngredienti(); renderComboIngredienti();
+  toast(`Importati ${data.importati} ingredienti!`);
+  input.value = '';
+}
+
+// ── RICETTA ───────────────────────────────────────────────────────
+function renderComboIngredienti() {
+  const sel = document.getElementById('ric-ingrediente');
+  const nomi = Object.keys(state.ingredienti).sort();
+  sel.innerHTML = nomi.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+
+function aggiungiARicetta() {
+  const ing = document.getElementById('ric-ingrediente').value;
+  const qty = parseFloat(document.getElementById('ric-quantita').value);
+  if (!ing || !qty || qty <= 0) { toast('Seleziona ingrediente e quantità!', 'error'); return; }
+  ricettaCorrente[ing] = qty;
+  renderRicettaCorrente();
+  document.getElementById('ric-quantita').value = '';
+  aggiornaCosto();
+}
+
+function renderRicettaCorrente() {
+  const list = document.getElementById('ric-list');
+  const entries = Object.entries(ricettaCorrente);
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🍽️</div>Aggiungi ingredienti</div>'; return;
+  }
+  list.innerHTML = entries.map(([n, q]) => {
+    const info = state.ingredienti[n];
+    const costo = info ? (info.costo_unitario * q).toFixed(2) : '?';
+    const unita = info ? info.unita : '';
+    return `<div class="ric-item">
+      <span class="ric-name">${n}</span>
+      <span class="ric-qty">${q} ${unita}</span>
+      <span class="ric-cost">€${costo}</span>
+      <button class="ric-del" onclick="rimuoviDaRicetta('${n.replace(/'/g,"\\'")}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function rimuoviDaRicetta(nome) {
+  delete ricettaCorrente[nome];
+  renderRicettaCorrente();
+  aggiornaCosto();
+}
+
+function aggiornaCosto() {
+  let totale = 0;
+  for (const [n, q] of Object.entries(ricettaCorrente)) {
+    if (state.ingredienti[n]) totale += state.ingredienti[n].costo_unitario * q;
+  }
+  const margine = parseFloat(document.getElementById('margine').value) || 30;
+  const iva = parseFloat(document.getElementById('iva').value) || 0;
+  const porzioni = Math.max(1, parseInt(document.getElementById('ric-porzioni').value) || 1);
+  const prezzo = totale * (1 + margine / 100);
+  const profitto = prezzo - totale;
+  const conIva = prezzo * (1 + iva / 100);
+  const porz = porzioni > 1 ? ` (${porzioni} porz. · €${(totale/porzioni).toFixed(2)}/cad.)` : '';
+  const pvp = porzioni > 1 ? ` · €${(prezzo/porzioni).toFixed(2)}/cad.` : '';
+  document.getElementById('cost-main').textContent = `💰 COSTO: €${totale.toFixed(2)}${porz}`;
+  document.getElementById('prezzo-vendita').textContent = `€${prezzo.toFixed(2)}${pvp}`;
+  document.getElementById('profitto').textContent = `€${profitto.toFixed(2)}`;
+  document.getElementById('row-iva').style.display = iva > 0 ? 'flex' : 'none';
+  document.getElementById('prezzo-iva').textContent = `€${conIva.toFixed(2)}`;
+}
+
+async function salvaRicetta() {
+  const nome = document.getElementById('ric-nome').value.trim();
+  if (!nome) { toast('Inserisci un nome!', 'error'); return; }
+  if (!Object.keys(ricettaCorrente).length) { toast('Aggiungi ingredienti!', 'error'); return; }
+  const res = await fetch('/api/ricette', { method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nome, ingredienti: ricettaCorrente,
+      margine: document.getElementById('margine').value,
+      iva: document.getElementById('iva').value,
+      porzioni: document.getElementById('ric-porzioni').value,
+      note: document.getElementById('ric-note').value
+    })});
+  const data = await res.json();
+  if (data.error) { toast(data.error, 'error'); return; }
+  state.ricette = data.ricette;
+  toast(`Ricetta "${nome}" salvata!`);
+}
+
+function pulisciRicetta() {
+  ricettaCorrente = {};
+  document.getElementById('ric-nome').value = '';
+  document.getElementById('ric-porzioni').value = '1';
+  document.getElementById('ric-note').value = '';
+  renderRicettaCorrente();
+  aggiornaCosto();
+}
+
+function renderListaRicette(containerId) {
+  const nomi = Object.keys(state.ricette).sort();
+  const el = document.getElementById(containerId);
+  if (!nomi.length) {
+    el.innerHTML = '<div class="empty">Nessuna ricetta salvata</div>'; return;
+  }
+  el.innerHTML = nomi.map(n => {
+    const r = state.ricette[n];
+    const costo = Object.entries(r.ingredienti).reduce((s, [ing, q]) =>
+      s + (state.ingredienti[ing] ? state.ingredienti[ing].costo_unitario * q : 0), 0);
+    return `<div class="ing-item" onclick="selRicettaModal('${n.replace(/'/g,"\\'")}', this)">
+      <div>
+        <div class="ing-name">${n}</div>
+        <div class="ing-info">€${costo.toFixed(2)} · ${r.porzioni || 1} porz.</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selRicettaModal(nome, el) {
+  ricettaModalSel = nome;
+  el.closest('.ing-list').querySelectorAll('.ing-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  // Suggerisci nome copia se siamo nel modal duplica
+  const dupNome = document.getElementById('dup-nome');
+  if (dupNome) dupNome.value = nome + ' (copia)';
+}
+
+function caricaRicettaSelezionata() {
+  if (!ricettaModalSel) { toast('Seleziona una ricetta!', 'error'); return; }
+  const r = state.ricette[ricettaModalSel];
+  document.getElementById('ric-nome').value = ricettaModalSel;
+  document.getElementById('margine').value = r.margine || 30;
+  document.getElementById('ric-porzioni').value = r.porzioni || 1;
+  document.getElementById('ric-note').value = r.note || '';
+  ricettaCorrente = {...r.ingredienti};
+  renderRicettaCorrente();
+  aggiornaCosto();
+  closeModal('modalCarica');
+  openTab('ricetta');
+  toast(`Ricetta "${ricettaModalSel}" caricata!`);
+}
+
+async function duplicaRicetta() {
+  if (!ricettaModalSel) { toast('Seleziona una ricetta!', 'error'); return; }
+  const nuovo = document.getElementById('dup-nome').value.trim();
+  if (!nuovo) { toast('Inserisci un nome!', 'error'); return; }
+  const res = await fetch(`/api/ricette/${encodeURIComponent(ricettaModalSel)}/duplica`,
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nuovo_nome: nuovo}) });
+  const data = await res.json();
+  if (data.error) { toast(data.error, 'error'); return; }
+  state.ricette = data.ricette;
+  closeModal('modalDuplica');
+  toast(`Duplicata come "${nuovo}"!`);
+}
+
+async function eliminaRicettaSelezionata() {
+  if (!ricettaModalSel) { toast('Seleziona una ricetta!', 'error'); return; }
+  if (!confirm(`Eliminare "${ricettaModalSel}"?`)) return;
+  const res = await fetch(`/api/ricette/${encodeURIComponent(ricettaModalSel)}`, {method:'DELETE'});
+  const data = await res.json();
+  state.ricette = data.ricette;
+  closeModal('modalElimina');
+  toast('Ricetta eliminata!');
+}
+
+function renderConfronto() {
+  const tbody = document.querySelector('#tabella-confronto tbody');
+  const nomi = Object.keys(state.ricette).sort();
+  if (!nomi.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nessuna ricetta</td></tr>'; return; }
+  const righe = nomi.map(n => {
+    const r = state.ricette[n];
+    const mg = r.margine || 30;
+    const costo = Object.entries(r.ingredienti).reduce((s, [ing, q]) =>
+      s + (state.ingredienti[ing] ? state.ingredienti[ing].costo_unitario * q : 0), 0);
+    const prezzo = costo * (1 + mg/100);
+    return {n, costo, prezzo, profitto: prezzo-costo, mg};
+  }).sort((a,b) => a.costo - b.costo);
+  const minC = righe[0]?.costo; const maxC = righe[righe.length-1]?.costo;
+  tbody.innerHTML = righe.map(r => {
+    const cls = r.costo === minC ? 'min-row' : (r.costo === maxC ? 'max-row' : '');
+    return `<tr class="${cls}"><td>${r.n}</td><td>€${r.costo.toFixed(2)}</td>
+      <td>€${r.prezzo.toFixed(2)}</td><td>€${r.profitto.toFixed(2)}</td><td>${r.mg}%</td></tr>`;
+  }).join('');
+}
+
+async function esportaPDF() {
+  const nome = document.getElementById('ric-nome').value.trim();
+  if (!nome || !Object.keys(ricettaCorrente).length) {
+    toast('Salva prima la ricetta!', 'error'); return;
+  }
+  toast('Generazione PDF...');
+  const res = await fetch('/api/pdf/ricetta', { method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nome, ingredienti: ricettaCorrente,
+      margine: document.getElementById('margine').value,
+      iva: document.getElementById('iva').value,
+      porzioni: document.getElementById('ric-porzioni').value,
+      note: document.getElementById('ric-note').value
+    })});
+  if (!res.ok) { toast('Errore PDF (installa reportlab)', 'error'); return; }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `${nome}_ricetta.pdf`; a.click();
+  toast('PDF scaricato!');
+}
+
+async function reportMensile() {
+  toast('Generazione report...');
+  const res = await fetch('/api/pdf/report');
+  if (!res.ok) { toast('Errore report', 'error'); return; }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `report_mensile.pdf`; a.click();
+  toast('Report scaricato!');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard() {
+  const grid = document.getElementById('dash-grid');
+  const nIng = Object.keys(state.ingredienti).length;
+  const nRic = Object.keys(state.ricette).length;
+  let ingMax = '—', ingMaxVal = '—', ingMin = '—', ingMinVal = '—';
+  if (nIng) {
+    const sorted = Object.entries(state.ingredienti).sort((a,b) => b[1].costo_unitario - a[1].costo_unitario);
+    ingMax = sorted[0][0]; ingMaxVal = `€${sorted[0][1].costo_unitario.toFixed(4)}`;
+    ingMin = sorted[sorted.length-1][0]; ingMinVal = `€${sorted[sorted.length-1][1].costo_unitario.toFixed(4)}`;
+  }
+  let ricMax = '—', ricMaxVal = '—', ricMin = '—', ricMinVal = '—';
+  if (nRic) {
+    const calcCosto = r => Object.entries(r.ingredienti).reduce((s,[ing,q]) =>
+      s + (state.ingredienti[ing] ? state.ingredienti[ing].costo_unitario * q : 0), 0);
+    const sorted = Object.entries(state.ricette).sort((a,b) => calcCosto(b[1]) - calcCosto(a[1]));
+    ricMax = sorted[0][0]; ricMaxVal = `€${calcCosto(sorted[0][1]).toFixed(2)}`;
+    ricMin = sorted[sorted.length-1][0]; ricMinVal = `€${calcCosto(sorted[sorted.length-1][1]).toFixed(2)}`;
+  }
+  grid.innerHTML = `
+    <div class="dash-card" style="background:#2c5282">
+      <div class="dc-label">Ingredienti</div>
+      <div class="dc-val">${nIng}</div>
+    </div>
+    <div class="dash-card" style="background:#553c9a">
+      <div class="dc-label">Ricette</div>
+      <div class="dc-val">${nRic}</div>
+    </div>
+    <div class="dash-card" style="background:#c53030">
+      <div class="dc-label">Più costoso</div>
+      <div class="dc-val" style="font-size:14px">${ingMax}</div>
+      <div class="dc-sub">${ingMaxVal}</div>
+    </div>
+    <div class="dash-card" style="background:#276749">
+      <div class="dc-label">Più economico</div>
+      <div class="dc-val" style="font-size:14px">${ingMin}</div>
+      <div class="dc-sub">${ingMinVal}</div>
+    </div>
+    <div class="dash-card" style="background:#c05621">
+      <div class="dc-label">Ricetta più cara</div>
+      <div class="dc-val" style="font-size:14px">${ricMax}</div>
+      <div class="dc-sub">${ricMaxVal}</div>
+    </div>
+    <div class="dash-card" style="background:#2c7a7b">
+      <div class="dc-label">Ricetta più economica</div>
+      <div class="dc-val" style="font-size:14px">${ricMin}</div>
+      <div class="dc-sub">${ricMinVal}</div>
+    </div>`;
+}
+
+// ── BACKUP ────────────────────────────────────────────────────────
+async function caricaBackup() {
+  const res = await fetch('/api/backup');
+  const files = await res.json();
+  const el = document.getElementById('backup-list');
+  if (!files.length) { el.innerHTML = '<div class="empty">Nessun backup</div>'; return; }
+  el.innerHTML = files.map(f => `
+    <div class="ing-item">
+      <span class="ing-name" style="font-size:12px">${f}</span>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <button class="btn btn-green btn-sm" onclick="ripristinaBackup('${f}')">♻️ Ripristina</button>
+        <button class="btn btn-red btn-sm" onclick="eliminaBackupFile('${f}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+async function ripristinaBackup(fname) {
+  if (!confirm(`Ripristinare "${fname}"? I dati correnti saranno sovrascritti.`)) return;
+  const res = await fetch(`/api/backup/${fname}/ripristina`, {method:'POST'});
+  const data = await res.json();
+  if (data.error) { toast(data.error, 'error'); return; }
+  state = data.data;
+  renderIngredienti(); renderComboIngredienti(); renderDashboard();
+  toast('Backup ripristinato!');
+}
+
+async function eliminaBackupFile(fname) {
+  if (!confirm(`Eliminare "${fname}"?`)) return;
+  await fetch(`/api/backup/${fname}`, {method:'DELETE'});
+  caricaBackup();
+  toast('Backup eliminato!');
+}
+</script>
+</body>
+</html>
