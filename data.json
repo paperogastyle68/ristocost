@@ -1,0 +1,205 @@
+{
+  "ingredienti": {
+    "Zucchero Semolato": {
+      "costo_unitario": 0.00099,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 0.99
+    },
+    "Uova Fresche": {
+      "costo_unitario": 0.23142857142857146,
+      "unita": "pz",
+      "quantita_totale": 28.0,
+      "costo_totale": 6.48
+    },
+    "Tuorli d'Uovo": {
+      "costo_unitario": 0.018518518518518517,
+      "unita": "g",
+      "quantita_totale": 108.0,
+      "costo_totale": 2.0
+    },
+    "Burro": {
+      "costo_unitario": 0.01,
+      "unita": "g",
+      "quantita_totale": 500,
+      "costo_totale": 5.0
+    },
+    "Latte Intero": {
+      "costo_unitario": 0.0012,
+      "costo_unitario_lordo": 0.0012,
+      "unita": "ml",
+      "quantita_totale": 1000.0,
+      "costo_totale": 1.2,
+      "scarto": 0.0
+    },
+    "Panna da Montare": {
+      "costo_unitario": 0.005,
+      "unita": "ml",
+      "quantita_totale": 500,
+      "costo_totale": 2.5
+    },
+    "Lievito per Dolci": {
+      "costo_unitario": 0.075,
+      "unita": "g",
+      "quantita_totale": 16,
+      "costo_totale": 1.2
+    },
+    "Amido di Mais": {
+      "costo_unitario": 0.005,
+      "unita": "g",
+      "quantita_totale": 250,
+      "costo_totale": 1.25
+    },
+    "Fecola di Patate": {
+      "costo_unitario": 0.00316,
+      "unita": "g",
+      "quantita_totale": 250.0,
+      "costo_totale": 0.79
+    },
+    "Limoni": {
+      "costo_unitario": 0.398,
+      "unita": "pz",
+      "quantita_totale": 5.0,
+      "costo_totale": 1.99
+    },
+    "Spray alim. nero": {
+      "costo_unitario": 0.038,
+      "unita": "ml",
+      "quantita_totale": 250.0,
+      "costo_totale": 9.5
+    },
+    "Farina 00": {
+      "costo_unitario": 0.00049,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 0.49
+    },
+    "Cacao Amaro": {
+      "costo_unitario": 0.018,
+      "unita": "g",
+      "quantita_totale": 250.0,
+      "costo_totale": 4.5
+    },
+    "Pasta di zucc. B.": {
+      "costo_unitario": 0.0065,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 6.5
+    },
+    "Pasta di zucc. N.": {
+      "costo_unitario": 0.0065,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 6.5
+    },
+    "Rose di zucc. Medie": {
+      "costo_unitario": 0.975,
+      "costo_unitario_lordo": 0.975,
+      "unita": "pz",
+      "quantita_totale": 16.0,
+      "costo_totale": 15.6,
+      "scarto": 0.0
+    },
+    "Farina w400": {
+      "costo_unitario": 0.00229,
+      "costo_unitario_lordo": 0.00229,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 2.29,
+      "scarto": 0.0
+    },
+    "Acqua": {
+      "costo_unitario": 0.002,
+      "costo_unitario_lordo": 0.002,
+      "unita": "ml",
+      "quantita_totale": 500.0,
+      "costo_totale": 1.0,
+      "scarto": 0.0
+    },
+    "Lievito madre": {
+      "costo_unitario": 0.001,
+      "costo_unitario_lordo": 0.001,
+      "unita": "g",
+      "quantita_totale": 1000.0,
+      "costo_totale": 1.0,
+      "scarto": 0.0
+    }
+  },
+  "ricette": {
+    "Pan di Spagna 32cm": {
+      "ingredienti": {
+        "Uova Fresche": 10.0,
+        "Farina 00": 200.0,
+        "Fecola di Patate": 100.0,
+        "Zucchero Semolato": 300.0
+      },
+      "margine": 30.0,
+      "data_creazione": "2026-03-08 20:35"
+    },
+    "Pan di Spagna 24cm": {
+      "ingredienti": {
+        "Uova Fresche": 6.0,
+        "Farina 00": 100.0,
+        "Fecola di Patate": 80.0,
+        "Zucchero Semolato": 180.0
+      },
+      "margine": 60.0,
+      "data_creazione": "2026-03-08 20:38"
+    },
+    "Crema Pasticcera": {
+      "ingredienti": {
+        "Latte Intero": 1000.0,
+        "Amido di Mais": 90.0,
+        "Tuorli d'Uovo": 250.0,
+        "Zucchero Semolato": 260.0
+      },
+      "margine": 30.0,
+      "data_creazione": "2026-03-12 20:00"
+    },
+    "Panettone al cioccolato - 1° Impasto": {
+      "ingredienti": {
+        "Farina w400": 450.0,
+        "Acqua": 225.0,
+        "Zucchero Semolato": 140.0,
+        "Burro": 140.0,
+        "Tuorli d'Uovo": 100.0,
+        "Lievito madre": 135.0
+      },
+      "margine": 30.0,
+      "porzioni": 1,
+      "note": "Dose x 1kg di prodotto finale",
+      "data_creazione": "2026-03-15 22:08"
+    },
+    "Panettone al cioccolato - 2° impasto": {
+      "ingredienti": {
+        "Farina w400": 112.0,
+        "Cacao Amaro": 30.0,
+        "Acqua": 65.0,
+        "Zucchero Semolato": 67.5,
+        "Tuorli d'Uovo": 195.0,
+        "Burro": 244.0
+      },
+      "margine": 30.0,
+      "porzioni": 1,
+      "note": "Dose x 1kg di prodotto finale",
+      "data_creazione": "2026-03-15 22:11"
+    }
+  },
+  "storico_prezzi": {
+    "Rose di zucc. Medie": [
+      {
+        "data": "2026-03-13 18:47",
+        "costo_unitario": 0.975,
+        "unita": "pz",
+        "note": "Prezzo precedente"
+      },
+      {
+        "data": "2026-03-13 18:49",
+        "costo_unitario": 0.4875,
+        "unita": "pz",
+        "note": "Prezzo precedente"
+      }
+    ]
+  },
+  "last_update": "2026-03-15 22:11:57"
+}
