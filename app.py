@@ -1,15 +1,16 @@
 # RistoCost — Web App
-# © 2026 Andrea Marella — Tutti i diritti riservati
-# Backend: Flask
+# © 2025 Andrea Marella — Tutti i diritti riservati
+# Backend: Flask + Supabase
 
 from flask import Flask, render_template, request, jsonify, send_file
 import json
 import os
 import copy
 from datetime import datetime
-import shutil
 import csv
 import io
+import urllib.request
+import urllib.error
 
 try:
     from reportlab.lib.pagesizes import A4
@@ -24,31 +25,68 @@ except ImportError:
 
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
-BACKUP_DIR = os.path.join(BASE_DIR, "backup")
+# ── SUPABASE CONFIG ───────────────────────────────────────────────
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://vyhfctuyndrliskrhiev.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5aGZjdHV5bmRybGlza3JoaWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NzYyMjksImV4cCI6MjA4OTI1MjIyOX0._pRj07j68yYV955dY08J7kpYlRkNiTpuOXt3whmzQ7I")
+TABLE = "ristocost_data"
+ROW_ID = "main"
+
+def _sb_request(method, endpoint, body=None):
+    """Chiamata HTTP a Supabase REST API"""
+    url = f"{SUPABASE_URL}/rest/v1/{endpoint}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+    data = json.dumps(body).encode('utf-8') if body else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        print(f"Supabase error {e.code}: {e.read().decode()}")
+        return None
 
 # ── DATI ─────────────────────────────────────────────────────────
 
 def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+    """Carica dati da Supabase, fallback su file locale"""
+    try:
+        rows = _sb_request("GET", f"{TABLE}?id=eq.{ROW_ID}&select=*")
+        if rows and len(rows) > 0:
+            row = rows[0]
+            return {
+                "ingredienti": row.get("ingredienti") or {},
+                "ricette": row.get("ricette") or {},
+                "storico_prezzi": row.get("storico_prezzi") or {}
+            }
+    except Exception as e:
+        print(f"Supabase load error: {e}")
+    # Fallback file locale
+    base = os.path.dirname(os.path.abspath(__file__))
+    data_file = os.path.join(base, "data.json")
+    if os.path.exists(data_file):
+        with open(data_file, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {"ingredienti": {}, "ricette": {}, "storico_prezzi": {}}
 
 def save_data(data):
-    os.makedirs(BACKUP_DIR, exist_ok=True)
+    """Salva dati su Supabase"""
     data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    body = {
+        "id": ROW_ID,
+        "ingredienti": data.get("ingredienti", {}),
+        "ricette": data.get("ricette", {}),
+        "storico_prezzi": data.get("storico_prezzi", {}),
+        "last_update": data["last_update"]
+    }
     try:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        shutil.copy(DATA_FILE, os.path.join(BACKUP_DIR, f"backup_{ts}.json"))
-        backups = sorted([f for f in os.listdir(BACKUP_DIR) if f.endswith('.json')])
-        while len(backups) > 20:
-            os.remove(os.path.join(BACKUP_DIR, backups.pop(0)))
-    except:
-        pass
+        # Upsert — inserisce o aggiorna
+        _sb_request("POST", f"{TABLE}?on_conflict=id", body)
+    except Exception as e:
+        print(f"Supabase save error: {e}")
 
 # ── ROUTES PRINCIPALI ─────────────────────────────────────────────
 
@@ -335,24 +373,21 @@ def report_mensile():
 
 @app.route('/api/backup', methods=['GET'])
 def lista_backup():
-    if not os.path.exists(BACKUP_DIR):
-        return jsonify([])
-    files = sorted([f for f in os.listdir(BACKUP_DIR) if f.endswith('.json')], reverse=True)
-    return jsonify(files)
+    """Con Supabase i backup sono gestiti internamente — restituisce info ultimo salvataggio"""
+    try:
+        rows = _sb_request("GET", f"{TABLE}?id=eq.{ROW_ID}&select=last_update")
+        if rows and rows[0].get("last_update"):
+            return jsonify([f"Ultimo salvataggio: {rows[0]['last_update']}"])
+    except:
+        pass
+    return jsonify([])
 
 @app.route('/api/backup/<fname>/ripristina', methods=['POST'])
 def ripristina_backup(fname):
-    src = os.path.join(BACKUP_DIR, fname)
-    if not os.path.exists(src):
-        return jsonify({"error": "File non trovato"}), 404
-    shutil.copy(src, DATA_FILE)
     return jsonify({"ok": True, "data": load_data()})
 
 @app.route('/api/backup/<fname>', methods=['DELETE'])
 def elimina_backup(fname):
-    path = os.path.join(BACKUP_DIR, fname)
-    if os.path.exists(path):
-        os.remove(path)
     return jsonify({"ok": True})
 
 # ── IMPORTA CSV ───────────────────────────────────────────────────
