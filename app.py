@@ -73,18 +73,20 @@ def load_data():
     return {"ingredienti": {}, "ricette": {}, "storico_prezzi": {}}
 
 def save_data(data):
-    """Salva dati su Supabase"""
+    """Salva dati su Supabase tramite PATCH"""
     data["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     body = {
-        "id": ROW_ID,
         "ingredienti": data.get("ingredienti", {}),
         "ricette": data.get("ricette", {}),
         "storico_prezzi": data.get("storico_prezzi", {}),
         "last_update": data["last_update"]
     }
     try:
-        # Upsert — inserisce o aggiorna
-        _sb_request("POST", f"{TABLE}?on_conflict=id", body)
+        result = _sb_request("PATCH", f"{TABLE}?id=eq.{ROW_ID}", body)
+        if result is None:
+            print("PATCH fallito, provo INSERT...")
+            body["id"] = ROW_ID
+            _sb_request("POST", TABLE, body)
     except Exception as e:
         print(f"Supabase save error: {e}")
 
