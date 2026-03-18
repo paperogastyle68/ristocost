@@ -2,15 +2,19 @@
   "ingredienti": {
     "Zucchero Semolato": {
       "costo_unitario": 0.00099,
+      "costo_unitario_lordo": 0.00099,
       "unita": "g",
       "quantita_totale": 1000.0,
-      "costo_totale": 0.99
+      "costo_totale": 0.99,
+      "scarto": 0.0
     },
     "Uova Fresche": {
-      "costo_unitario": 0.23142857142857146,
+      "costo_unitario": 0.249,
+      "costo_unitario_lordo": 0.249,
       "unita": "pz",
-      "quantita_totale": 28.0,
-      "costo_totale": 6.48
+      "quantita_totale": 30.0,
+      "costo_totale": 7.47,
+      "scarto": 0.0
     },
     "Tuorli d'Uovo": {
       "costo_unitario": 0.018518518518518517,
@@ -52,9 +56,11 @@
     },
     "Fecola di Patate": {
       "costo_unitario": 0.00316,
+      "costo_unitario_lordo": 0.00316,
       "unita": "g",
-      "quantita_totale": 250.0,
-      "costo_totale": 0.79
+      "quantita_totale": 500.0,
+      "costo_totale": 1.58,
+      "scarto": 0.0
     },
     "Limoni": {
       "costo_unitario": 0.398,
@@ -109,11 +115,11 @@
       "scarto": 0.0
     },
     "Acqua": {
-      "costo_unitario": 0.002,
-      "costo_unitario_lordo": 0.002,
+      "costo_unitario": 0.0001,
+      "costo_unitario_lordo": 0.0001,
       "unita": "ml",
-      "quantita_totale": 500.0,
-      "costo_totale": 1.0,
+      "quantita_totale": 1000.0,
+      "costo_totale": 0.1,
       "scarto": 0.0
     },
     "Lievito madre": {
@@ -183,6 +189,18 @@
       "porzioni": 1,
       "note": "Dose x 1kg di prodotto finale",
       "data_creazione": "2026-03-15 22:11"
+    },
+    "Pasta per Bignè": {
+      "ingredienti": {
+        "Farina 00": 150.0,
+        "Burro": 125.0,
+        "Uova Fresche": 4.0,
+        "Acqua": 250.0
+      },
+      "margine": 30.0,
+      "porzioni": 1,
+      "note": "",
+      "data_creazione": "2026-03-18 15:12"
     }
   },
   "storico_prezzi": {
@@ -199,7 +217,29 @@
         "unita": "pz",
         "note": "Prezzo precedente"
       }
+    ],
+    "Uova Fresche": [
+      {
+        "data": "2026-03-17 15:09",
+        "costo_unitario": 0.23142857142857146,
+        "unita": "pz",
+        "note": "Modifica"
+      }
+    ],
+    "Acqua": [
+      {
+        "data": "2026-03-18 15:11",
+        "costo_unitario": 0.002,
+        "unita": "ml",
+        "note": "Modifica"
+      },
+      {
+        "data": "2026-03-18 15:11",
+        "costo_unitario": 0.0002,
+        "unita": "ml",
+        "note": "Modifica"
+      }
     ]
   },
-  "last_update": "2026-03-15 22:11:57"
+  "last_update": "2026-03-18 15:12:56"
 }
